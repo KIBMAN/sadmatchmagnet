@@ -1,8 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TinderCard from "react-tinder-card";
+import { useCookies } from "react-cookie";
 import ChatContainer from "../components/ChatContainer"
+import axios from "axios";
 
 const Dashboard = () => {
+
+  const [user,setUser] = useState(null)
+  const [genderedUsers,setGenderedUsers]
+  const [cookies,setCookie,removeCookie]=useCookies(['user'])
+
+  const userId=cookies.UserId
+
+  const getUser=async()=>{
+    try{
+      const response = await axios.get('http://localhost:8000/user',{
+        params: {userId}
+      })
+      setUser(response.data)
+    } catch (error){
+      console.log(error)
+    }
+  }
+
+  const getGenderedUsers=async()=>{
+    try{
+      const response=await axios.get('http://localhost:8000/gendered-users',{
+        params: {gender:user?.gender_interest}
+      })
+      setGenderedUsers(response.data)
+    }catch(error){
+      console.log(error)
+    }
+  }
+
+  useEffect(()=>{
+    getUser()
+    getGenderedUsers()
+  },[])
+
+  console.log('user',user)
+
+  
+
   const characters = [
     {
       name: "Richard Hendricks",
@@ -37,8 +77,10 @@ const Dashboard = () => {
   };
 
   return (
+    <>
+    {user &&
     <div className="dashboard">
-      <ChatContainer/>
+      <ChatContainer user={user}/>
       <div className="swipe-container">
         <div className="card-container">
           {characters.map((character) => 
@@ -59,7 +101,9 @@ const Dashboard = () => {
 
         </div>
       </div>
-    </div>
+    </div>}
+    </>
+
   );
 };
 
